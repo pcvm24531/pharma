@@ -13,22 +13,15 @@ app.listen( desiredPort, ()=>{
     console.log(`Conected by port: ${desiredPort}`);
 });
 
+app.get('/api',(request, response)=>{
+    return response.status(200).send('Hello!');
+});
+
 app.get("/api/users", (request, response)=>{
     return response.status(200).send(mockUsers);
 });
 
-app.get("/api/users/:id", (request, response)=>{
-    const parsedId = parseInt(request.params.id);
-    if ( isNaN(parsedId) ) {
-        return response.status(400).send( {msg: 'Bad request. Invalid ID.'} );
-    }
-
-    const findUser = mockUsers.find( (user)=> parsedId===user.id );
-    if( !findUser ) return response.status(404);
-
-    return response.status(200).send(findUser);
+app.get('/api/users/:id', (request, response)=>{
+    return response.status(200).send('Only user');
 });
-
-
-
 
