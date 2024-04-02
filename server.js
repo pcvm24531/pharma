@@ -16,9 +16,15 @@ app.get('/api/users',(require, response)=>{
 });
 app.get('/api/users/:id', (request, response)=>{
     const parsedId = parseInt(request.params.id);
-    const user = mockUsers.findIndex( (id)=> parsedId===id );
-    console.log(user);
-})
+    //Verificamos si el parametro es válido
+    if( isNaN(parsedId) ) return response.status(400).send({msg:'Bad Request. Invalid ID'});
+
+    const searchUser = mockUsers.find( (user)=>user.id===parsedId );
+    //Verificamos si no existe el usuario
+    if( !searchUser ) return response.status(404).send({msg:'Not Found. User not found'});
+
+    return response.status(200).send(searchUser);
+});
 
 finAvailablePort(desiredPort).then( port =>{
     app.listen( port, ()=> {
