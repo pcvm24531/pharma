@@ -1,21 +1,34 @@
-const http = require('node:http');
-const mongoose = require('mongoose');
-const {finAvailablePort} = require('./port');
-const { log, Console } = require('node:console');
+const express = require('express');
+const app = express();
 
-const desiredPort = process.env.PORT ?? 3000 ;
+const desiredPort = process.env.PORT ?? 3000;
 
-const server = http.createServer(
-    ( req, res )=>{
-        res.end('Hola mundo cruel');
-    }
-);
+const mockUsers = [
+    {id:1, name:'Pablo', lastName:'Vargas'},
+    {id:2, name:'Cesar', lastName:'Morales'},
+    {id:3, name:'Limbert', lastName:'Gutierrez'},
+];
 
-mongoose.connect("mongodb+srv://root:Abcde123@cluster0.ymmzdlc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
-.then( ()=>console.log('Conectado MongoDB') );
-
-finAvailablePort(desiredPort).then( port =>{
-    server.listen( port, ()=> {
-        console.log( `Server listening on port http://localhost:${server.address().port}` );
-    })
+app.listen( desiredPort, ()=>{
+    console.log(`Conected by port: ${desiredPort}`);
 });
+
+app.get("/api/users", (request, response)=>{
+    return response.status(200).send(mockUsers);
+});
+
+app.get("/api/users/:id", (request, response)=>{
+    const parsedId = parseInt(request.params.id);
+    if ( isNaN(parsedId) ) {
+        return response.status(400).send( {msg: 'Bad request. Invalid ID.'} );
+    }
+
+    const findUser = mockUsers.find( (user)=> parsedId===user.id );
+    if( !findUser ) return response.status(404);
+
+    return response.status(200).send(findUser);
+});
+
+
+
+
