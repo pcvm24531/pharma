@@ -1,27 +1,92 @@
 const express = require('express');
+const {finAvailablePort} = require('./port');
+
 const app = express();
+app.use(express.json());
+
+const logginMiddleware = (request, response, next)=>{
+    console.log(`${request.method} - ${request.url}`);
+    next();
+}
+
+const resolveIndexByUserId = (request, response, next)=>{
+    const {
+        params:{id}
+    }=request;
+    const parsedId = parseInt(id);
+    if( isNaN(parsedId) ) return response.status(400).send({msg:"Bad Request. Invalid ID"})
+    const findUserIndex = mockUsers.findIndex( (user)=>user.id===parsedId );
+    if( findUserIndex === -1 ) return response.status(404).send({msg:'Not Found'})
+    request.findUserIndex = findUserIndex;
+    next();
+}
+
 
 const desiredPort = process.env.PORT ?? 3000;
 
 const mockUsers = [
     {id:1, name:'Pablo', lastName:'Vargas'},
-    {id:2, name:'Cesar', lastName:'Morales'},
-    {id:3, name:'Limbert', lastName:'Gutierrez'},
+    {id:2, name:'Hugo', lastName:'Lopez'},
+    {id:3, name:'Marco', lastName:'Mora'},
 ];
 
-app.listen( desiredPort, ()=>{
-    console.log(`Conected by port: ${desiredPort}`);
+/*app.get('/api/users',(require, response)=>{
+    response.status(201).send( mockUsers );
+});*/
+//Ejemplo get user con query => filter, value
+app.get('/api/users', (request, response)=>{
+    const {query:{filter, value}} = request;
+    //Si el filtro y valor no han sido definidos
+    if( !filter && !value ) return response.status(200).send(mockUsers);
+
+    if( filter && value ) 
+        return response.send(
+            mockUsers.filter( (user)=> user[filter].includes(value) )
+        );
+    
+    return response.send(mockUsers);
 });
 
-app.get('/api',(request, response)=>{
-    return response.status(200).send('Hello!');
+app.get('/api/users/:id',resolveIndexByUserId ,(request, response)=>{
+    const {findUserIndex}=request;
+    const findUser = mockUsers[findUserIndex];
+    if(!findUser) return response.status(404);
+    return response.status(200).send(findUser);
 });
 
-app.get("/api/users", (request, response)=>{
+//Ejemplo Save Users
+app.post('/api/users', (request, response)=>{
+    const {body} = request;
+    
+    const newUser = { id: mockUsers[mockUsers.length-1].id+1 , ...body  }
+    mockUsers.push(newUser);
     return response.status(200).send(mockUsers);
 });
 
-app.get('/api/users/:id', (request, response)=>{
-    return response.status(200).send('Only user');
+//Ejemplo actualizar informacion
+app.put('/api/users/:id', resolveIndexByUserId, (request, response)=>{
+    const {body, findUserIndex}=request;
+    mockUsers[findUserIndex] = { id: mockUsers[findUserIndex].id, ...body };
+    return response.status(200).send(mockUsers);
+} );
+
+//Ejemplo usamos patch para agregar un nuevo campo/atributo/etc
+app.patch("/api/users/:id",resolveIndexByUserId ,(request, response)=>{
+    const {body,findUserIndex} = request;  
+    mockUsers[findUserIndex] = {...mockUsers[findUserIndex], ...body};
+    return response.status(200).send(mockUsers);
+} );
+
+app.delete("/api/users/:id",resolveIndexByUserId ,(request, response)=>{
+    const {findUserIndex}=request;
+    mockUsers.splice(findUserIndex, 1);
+    return response.status(200).send(mockUsers);
 });
 
+
+
+finAvailablePort(desiredPort).then( port =>{
+    app.listen( port, ()=> {
+        console.log( `Server listening on port http://localhost:${port}` );
+    })
+});
