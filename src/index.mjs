@@ -1,5 +1,7 @@
-const express = require('express');
-const {finAvailablePort} = require('./port');
+import express from "express";
+import {finAvailablePort} from '../port.js';
+import {query, validationResult, body, checkSchema} from "express-validator";
+import { createUserValidationSchema } from "./utils/validationSchemas.mjs";
 
 const app = express();
 app.use(express.json());
@@ -34,18 +36,28 @@ const mockUsers = [
     response.status(201).send( mockUsers );
 });*/
 //Ejemplo get user con query => filter, value
-app.get('/api/users', (request, response)=>{
-    const {query:{filter, value}} = request;
-    //Si el filtro y valor no han sido definidos
-    if( !filter && !value ) return response.status(200).send(mockUsers);
+app.get(
+    '/api/users',
+    query('filter')
+        .isString()
+        .notEmpty()
+        .isLength({min:2, max:3}).withMessage('Must be at least 3-10 characters')
+    ,        
+     (request, response)=>{
+        const result = validationResult(request);
+        console.log(result);
+        const {query:{filter, value}} = request;
+        //Si el filtro y valor no han sido definidos
+        if( !filter && !value ) return response.status(200).send(mockUsers);
 
-    if( filter && value ) 
-        return response.send(
-            mockUsers.filter( (user)=> user[filter].includes(value) )
-        );
-    
-    return response.send(mockUsers);
-});
+        if( filter && value ) 
+            return response.send(
+                mockUsers.filter( (user)=> user[filter].includes(value) )
+            );
+        
+        return response.send(mockUsers);
+    }
+);
 
 app.get('/api/users/:id',resolveIndexByUserId ,(request, response)=>{
     const {findUserIndex}=request;
@@ -55,13 +67,22 @@ app.get('/api/users/:id',resolveIndexByUserId ,(request, response)=>{
 });
 
 //Ejemplo Save Users
-app.post('/api/users', (request, response)=>{
-    const {body} = request;
-    
-    const newUser = { id: mockUsers[mockUsers.length-1].id+1 , ...body  }
-    mockUsers.push(newUser);
-    return response.status(200).send(mockUsers);
-});
+app.post(
+    '/api/users', 
+    checkSchema(createUserValidationSchema),
+    (request, response)=>{
+
+        const result = validationResult(request);
+        console.log(result);
+
+        if( !result.isEmpty() ) return response.status(400).send({errors: result.array()});
+
+        const {body} = request;        
+        const newUser = { id: mockUsers[mockUsers.length-1].id+1 , ...body  }
+        mockUsers.push(newUser);
+        return response.status(200).send(mockUsers);
+    }
+);
 
 //Ejemplo actualizar informacion
 app.put('/api/users/:id', resolveIndexByUserId, (request, response)=>{
