@@ -2,9 +2,12 @@ import express from "express";
 import {finAvailablePort} from '../port.js';
 import {query, validationResult, body, checkSchema} from "express-validator";
 import { createUserValidationSchema } from "./utils/validationSchemas.mjs";
+import usersRouter from "./routes/users.mjs";
+import {mockUsers} from './utils/constants.mjs';
 
 const app = express();
 app.use(express.json());
+app.use(usersRouter);
 
 const logginMiddleware = (request, response, next)=>{
     console.log(`${request.method} - ${request.url}`);
@@ -26,11 +29,7 @@ const resolveIndexByUserId = (request, response, next)=>{
 
 const desiredPort = process.env.PORT ?? 3000;
 
-const mockUsers = [
-    {id:1, name:'Pablo', lastName:'Vargas'},
-    {id:2, name:'Hugo', lastName:'Lopez'},
-    {id:3, name:'Marco', lastName:'Mora'},
-];
+
 
 /*app.get(
     '/api/users',    
@@ -39,30 +38,6 @@ const mockUsers = [
     }
 );*/
 //Ejemplo get user con query => filter, value
-app.get(
-    '/api/users',
-    query('filter')
-        .isString()
-        .notEmpty().withMessage('Must not be empty')
-        .isLength({min:2, max:20}).withMessage('Must be at least 3-10 characters')
-    ,
-    (request, response)=>{
-        
-        const result = validationResult(request);
-        console.log(result);
-
-        const {query:{filter, value}} = request;
-        //Si el filtro y valor no han sido definidos
-        if( !filter && !value ) return response.status(200).send(mockUsers);
-
-        if( filter && value ) 
-            return response.send(
-                mockUsers.filter( (user)=> user[filter].includes(value) )
-            );
-        
-        return response.send(mockUsers);
-    }
-);
 
 app.get('/api/users/:id',resolveIndexByUserId ,(request, response)=>{
     const {findUserIndex}=request;
@@ -72,21 +47,7 @@ app.get('/api/users/:id',resolveIndexByUserId ,(request, response)=>{
 });
 
 //Ejemplo Save Users
-app.post(
-    '/api/users', 
-    checkSchema(createUserValidationSchema),
-    (request, response)=>{
-        const result = validationResult(request);
 
-        if( !result.isEmpty ) return response.status(400).send({error: result.array()})
-
-        const {body} = request;
-        
-        const newUser = { id: mockUsers[mockUsers.length-1].id+1 , ...body  }
-        mockUsers.push(newUser);
-        return response.status(200).send(mockUsers);
-    }
-);
 
 //Ejemplo actualizar informacion
 app.put('/api/users/:id', resolveIndexByUserId, (request, response)=>{
