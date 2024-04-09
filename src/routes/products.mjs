@@ -7,7 +7,10 @@ const router = Router();
 router.get(
     '/api/products',
     ( req, res )=>{
-        return res.status(200);send(mockProducts);
+        if( req.signedCookies.hello && req.signedCookies.hello==='world' ){
+            return res.status(200).send(mockProducts);
+        }
+        return res.status(403).send({msg:'Sorry. You need the correct cookie!'})
     }
 );
 
