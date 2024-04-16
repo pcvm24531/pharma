@@ -3,11 +3,16 @@ import {finAvailablePort} from '../port.js';
 import routes from "./routes/index.mjs";
 import cookieParser from "cookie-parser";
 import session from "express-session";
-import {mockUsers} from "./utils/constants.mjs";
 import passport from "passport";
+import { mongoose } from "mongoose";
 import "./strategies/local-strategy.mjs";
 
 const app = express();
+
+mongoose
+.connect('mongodb://localhost:27017/pharma')
+.then(console.log('Conectado MongoDB'))
+.catch( (err)=>console.log(`Error: ${err}`) );
 
 app.use(express.json());
 app.use(cookieParser());
