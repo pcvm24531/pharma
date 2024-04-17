@@ -3,6 +3,7 @@ import { query, validationResult, checkSchema } from "express-validator";
 import { mockUsers } from '../utils/constants.mjs';
 import { createUserValidationSchema } from "../utils/validationSchemas.mjs";
 import { resolveIndexByUserId } from "../utils/middleware.mjs";
+import { User } from "../mongoose/schemas/users";
 
 const router = Router();
 
@@ -53,17 +54,20 @@ router.get('/api/users/:id',resolveIndexByUserId ,(request, response)=>{
 
 router.post(
     '/api/users', 
-    checkSchema(createUserValidationSchema),
-    (request, response)=>{
+    async (request, response)=>{
         const result = validationResult(request);
 
         if( !result.isEmpty ) return response.status(400).send({error: result.array()})
 
-        const {body} = request;
-        
-        const newUser = { id: mockUsers[mockUsers.length-1].id+1 , ...body  }
-        mockUsers.push(newUser);
-        return response.status(200).send(mockUsers);
+        const {body} = request;        
+        const newUser = new User(body);
+        try {
+            const savedUser = await newUser.save();
+            return response.status(201).send(savedUser);
+        } catch (error) {
+            console.log(error);
+            return response.sendStatus(400);
+        }
     }
 );
 
