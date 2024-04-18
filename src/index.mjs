@@ -4,9 +4,8 @@ import routes from "./routes/index.mjs";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import passport from "passport";
-import { mongoose } from "mongoose";
-import mongoose from "mongoose";
 import "./strategies/local-strategy.mjs";
+
 
 const app = express();
 
