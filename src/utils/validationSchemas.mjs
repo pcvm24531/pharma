@@ -28,5 +28,17 @@ export const createUserValidationSchema = {
         isString:{
             errorMessage:"Name must be a string!"
         }
+    },
+    password:{
+        isLength:{
+            option:{
+                min: 5,
+                max: 15,
+            },
+            errorMessage:"Password must be at least 5 characters with a max of 32 characters"
+        },
+        notEmpty:{
+            errorMessage:"Password cannot be epety"
+        }
     }
 };
