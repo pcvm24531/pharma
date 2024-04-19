@@ -4,6 +4,8 @@ import { mockUsers } from '../utils/constants.mjs';
 import { createUserValidationSchema } from "../utils/validationSchemas.mjs";
 import { resolveIndexByUserId } from "../utils/middleware.mjs";
 import { User } from "../mongoose/schemas/users.mjs";
+import { hash } from "bcrypt";
+import { hassPassword } from "../utils/helpers.mjs";
 
 const router = Router();
 
@@ -54,6 +56,7 @@ router.post(
         if( !result.isEmpty ) return response.status(400).send({error: result.array()})
 
         const data = matchedData(request);
+        data.password = hassPassword(data.password);
         const newUser = new User(data);
         try {
             const savedUser = await newUser.save();
