@@ -4,7 +4,6 @@ import { mockUsers } from '../utils/constants.mjs';
 import { createUserValidationSchema } from "../utils/validationSchemas.mjs";
 import { resolveIndexByUserId } from "../utils/middleware.mjs";
 import { User } from "../mongoose/schemas/users.mjs";
-import { hash } from "bcrypt";
 import { hassPassword } from "../utils/helpers.mjs";
 
 const router = Router();
@@ -17,16 +16,14 @@ router.get(
         .isLength({min:2, max:20}).withMessage('Must be at least 3-10 characters')
     ,
     (request, response)=>{
-        console.log(request.session.id);
         request.sessionStore.get(request.session.id, (err, sessionData)=>{
             if( err ){
                 console.log(err);
                 throw err;
             }
-            console.log(sessionData);
         });
+        console.log(sessionData);
         const result = validationResult(request);
-
         const {query:{filter, value}} = request;
         //Si el filtro y valor no han sido definidos
         if( !filter && !value ) return response.status(200).send(mockUsers);

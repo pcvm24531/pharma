@@ -6,7 +6,8 @@ import session from "express-session";
 import passport from "passport";
 import mongoose from "mongoose";
 import MongoStore from "connect-mongo";
-import "./strategies/local-strategy.mjs";
+//import "./strategies/local-strategy.mjs";
+import "./strategies/discord-strategy.mjs";
 
 
 const app = express();
@@ -35,7 +36,6 @@ app.use(
 
 app.use(passport.initialize());
 app.use(passport.session());
-
 app.use(routes);
 
 app.post(
@@ -52,19 +52,32 @@ app.get(
         console.log(`Inside /api/auth/status`);
         console.log(request.user);
         console.log(request.session);
+        console.log(request.sessionID);
         return  request.user ? response.status(200).send(request.user) : response.status(401).send({msg:'User not found'});
     }
 );
 
 app.post('/api/auth/logout', (request, response)=>{
     if(!request.user) return response.sendStatus(401);
-
     request.logout( (error)=>{
         if(error) return response.sendStatus(400);
-
         response.send(200);
     } );
-})
+});
+
+app.get(
+    '/api/auth/discord', 
+    passport.authenticate("discord")
+);
+app.get(
+    '/api/auth/discord/redirect', 
+    passport.authenticate("discord"), 
+    (request, response)=>{
+        console.log(request.session);
+        console.log(request.user);
+        return response.sendStatus(200);
+    }
+);
 
 const logginMiddleware = (request, response, next)=>{
     console.log(`${request.method} - ${request.url}`);
