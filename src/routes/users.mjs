@@ -22,7 +22,7 @@ router.get(
                 throw err;
             }
         });
-        console.log(sessionData);
+        
         const result = validationResult(request);
         const {query:{filter, value}} = request;
         //Si el filtro y valor no han sido definidos
@@ -67,7 +67,7 @@ router.post(
 
 //Ejemplo actualizar informacion
 router.put('/api/users/:id', resolveIndexByUserId, (request, response)=>{
-    const {body, findUserIndex}=request;
+    const {body, findUserIndex} = request;
     mockUsers[findUserIndex] = { id: mockUsers[findUserIndex].id, ...body };
     return response.status(200).send(mockUsers);
 } );
