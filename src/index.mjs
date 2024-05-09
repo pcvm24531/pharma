@@ -6,17 +6,11 @@ import { User } from "./mongoose/schemas/users.mjs"
 
 const app = express();
 
-mongoose.connect('mongodb://localhost/pharma')
+mongoose.connect( 'mongodb://localhost:27017/pharma' )
     .then( ()=>console.log('DB Connected') )
     .catch( (err)=>console.log(`Error: ${err}`) );
 
 const desiredPort = process.env.PORT ?? 3000;
-const URL = process.env.DB_URI;
-mongoose.connect(URL,{})
-    .then( ()=>{
-        console.log("DB Connected!");
-    })
-    .catch(err=>{console.log(err);});
 
 app.get( 
     '/api/users', 
