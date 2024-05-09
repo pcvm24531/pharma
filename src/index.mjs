@@ -3,12 +3,14 @@ import {finAvailablePort} from '../port.js';
 import { mockUsers } from "./utils/constants.mjs";
 import { mongoose } from "mongoose";
 import { User } from "./mongoose/schemas/users.mjs"
+import 'dotenv/config';
 
 const app = express();
 
 const desiredPort = process.env.PORT ?? 3000;
+const DB_CONN = process.env.URI_DB;
 
-mongoose.connect( 'mongodb://localhost:27017/pharma' )
+mongoose.connect( DB_CONN)
     .then( ()=>console.log('DB Connected') )
     .catch( (err)=>console.log(`Error: ${err}`) );
 
