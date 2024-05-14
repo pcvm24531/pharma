@@ -3,7 +3,7 @@ export const createUserValidationSchema = {
         isLength:{
             option:{
                 min: 5,
-                max: 20,
+                max: 32,
             },
             errorMessage:"Username must be at least 5 characters with a max of 32 characters",
         },
@@ -14,6 +14,7 @@ export const createUserValidationSchema = {
             errorMessage:"Username must be a string!"
         },
     },
+
     displayName: {        
         isLength:{
             option:{
@@ -38,7 +39,7 @@ export const createUserValidationSchema = {
             errorMessage:"Password must be at least 5 characters with a max of 32 characters"
         },
         notEmpty:{
-            errorMessage:"Password cannot be epety"
+            errorMessage:"Password cannot be empety"
         }
     }
 };
