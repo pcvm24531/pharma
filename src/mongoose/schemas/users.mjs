@@ -12,17 +12,17 @@ const UserSchema = new mongoose.Schema({
     },
     nickName:{
         type: String,
-        required: true
+        required: true,
     },
     name:{
         type: String,
-        required: true
+        required: true,
     },
     lastName:{
         type: String,
-        required: true
+        required: true,
     },
-    birdDate: Date
+    birdDate: Date,
 });
 
 export const User = mongoose.model("User", UserSchema);
