@@ -4,6 +4,7 @@ import {finAvailablePort} from '../port.js';
 import { mongoose } from "mongoose";
 import {mockUsers} from "./utils/constants.mjs"
 
+
 const app = express();
 
 const desiredPort = process.env.PORT ?? 3000;
@@ -31,11 +32,9 @@ const resolveIndexByUserId = (request, response, next)=>{
         params:{id}
     } = request;
     const parseId = parseInt(id);
-    
     if( isNaN(parseId) ) return response.status(400).send({msg:'Bad request. User id invalid'})
-    
-    const findUserIndex = mockUsers.findIndex( (user)=> user.id === parseId );
-    
+
+    const findUserIndex = mockUsers.findIndex( (user)=>{ user.id===parseId } );
     if( findUserIndex === -1 ) return response.status(404).send({msg:'Not found'});
     request.findUserIndex = findUserIndex;
     next();
@@ -54,9 +53,10 @@ app.get(
     '/api/users/:id',
     resolveIndexByUserId,
     (request, response)=>{
-        const{findUserIndex}=request;
-        const findUser = mockUsers[findUserIndex];
-        if (!findUser) return response.status(400).send({msg:'Bad request. User Id not fount'});
-        response.status(200).send(findUser);
+        const parseId = parseInt(request.params.id);
+        if ( isNaN(parseId) ) return response.status(400).send({msg:'Bad request. Invalid ID'});
+
+        //Buscamos el usuario
+        return response.status(200).send({msg:'The user is: '+parseId});
     }
 );
