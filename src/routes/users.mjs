@@ -2,6 +2,7 @@ import { Router } from "express";
 import { checkSchema, matchedData, query, validationResult } from "express-validator";
 import { mockUsers } from "../utils/constants.mjs";
 import { createUserValidationSchema } from "../utils/validationSchemas.mjs";
+import {resolveIndexByUserId} from "../utils/middleware.mjs";
 
 const router = Router();
 
@@ -17,14 +18,27 @@ router.get(
         const result = validationResult(request);
         console.log(result);
         const{
-            query: { filter, value }
+            query: { filter, value },
         } = request;
-        if (filter && value) return response.send(
-            mockUsers.filter( (user) => user[filter].includes(value) )
-        );
+        if (filter && value) 
+            return response.send( mockUsers.filter( (user) => user[filter].includes(value) ) );
+        
         return response.send(mockUsers);
-    }    
+    }
 );
+
+router.get(
+    "/api/users/:id",
+    resolveIndexByUserId,
+    (request, response)=>{
+        const {findUserIndex} = request;
+        const findUser = mockUsers[findUserIndex];
+        if(!findUser) return response.status(404).send({msg:"Bad request. User not found"});
+
+        return response.status(200).send(findUser);
+    }
+);
+
 router.post(
     "/api/users",
     checkSchema(createUserValidationSchema),
